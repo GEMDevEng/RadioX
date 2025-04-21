@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
+const { swaggerUi, swaggerDocs } = require('./config/swagger');
 const authRoutes = require('./routes/authRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const audioRoutes = require('./routes/audioRoutes');
@@ -44,6 +45,9 @@ app.use('/api/search', searchRoutes);
 app.use('/api/audio', audioRoutes);
 app.use('/api/podcast', podcastRoutes);
 app.use('/api/usage', usageRoutes);
+
+// API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, { explorer: true }));
 
 // Health check endpoint
 app.get('/health', (req, res) => {

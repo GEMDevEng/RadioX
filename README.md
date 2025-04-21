@@ -66,20 +66,26 @@ RadioX Free Edition allows users to convert up to 500 X posts per month into aud
 - [Google Cloud Account](https://cloud.google.com/) (for TTS API)
 
 ### Setup Instructions
+
+#### Manual Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-org/radiox-free-edition.git
-   cd radiox-free-edition
+   git clone https://github.com/GEMDevEng/RadioX.git
+   cd RadioX
    ```
 
 2. Install dependencies:
    ```bash
    npm install
+   cd frontend && npm install
    ```
 
 3. Set up environment variables:
-   - Create a `.env` file in the root directory.
-   - Add the following variables:
+   - Copy the `.env.example` file to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Edit the `.env` file with your actual credentials:
      ```env
      MONGODB_URI=your_mongodb_uri
      REDIS_URL=your_redis_url
@@ -90,12 +96,49 @@ RadioX Free Edition allows users to convert up to 500 X posts per month into aud
      JWT_SECRET=your_jwt_secret
      ```
 
-4. Run the application:
+4. Run the application in development mode:
    ```bash
    npm run dev
    ```
 
 5. Access the application at `http://localhost:3000`.
+
+#### Docker Setup
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/GEMDevEng/RadioX.git
+   cd RadioX
+   ```
+
+2. Set up environment variables:
+   - Copy the `.env.example` file to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Edit the `.env` file with your actual credentials.
+
+3. Start the application using Docker Compose:
+   ```bash
+   docker-compose up -d
+   ```
+
+4. Access the application at `http://localhost:3000`.
+
+#### Production Deployment
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/GEMDevEng/RadioX.git
+   cd RadioX
+   ```
+
+2. Set up environment variables for production.
+
+3. Build and start the application using Docker Compose:
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
+
+4. Access the application at your configured domain.
 
 ---
 
@@ -207,6 +250,11 @@ The application is deployed on AWS using:
 
 Detailed documentation is available in the `docs` directory:
 
+- **API Documentation**: Available at `/api-docs` when running the application
+  - Endpoints documentation
+  - Request/response schemas
+  - Authentication details
+
 - **Product Documentation**: `/docs/product/`
   - Product Description
   - Target Audience Analysis
@@ -246,8 +294,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Contact
 
 For support or contributions, please contact:
+
 - **Email**: support@radiox.com
-- **GitHub Issues**: [RadioX Issues](https://github.com/your-org/radiox-free-edition/issues)
+- **GitHub Issues**: [RadioX Issues](https://github.com/GEMDevEng/RadioX/issues)
 
 ---
 

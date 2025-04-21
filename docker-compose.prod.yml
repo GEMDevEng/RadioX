@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # Frontend React application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../infrastructure/docker/Dockerfile.frontend
+      target: production
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+  # Backend Express API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../infrastructure/docker/Dockerfile.backend
+      target: production
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+      - redis
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongo:27017/radiox
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - X_API_KEY=${X_API_KEY}
+      - X_API_SECRET=${X_API_SECRET}
+      - GOOGLE_CLOUD_TTS_KEY=${GOOGLE_CLOUD_TTS_KEY}
+    restart: always
+
+  # Processing service for audio conversion
+  processing:
+    build:
+      context: ./processing
+      dockerfile: ../infrastructure/docker/Dockerfile.backend
+      target: production
+    depends_on:
+      - mongo
+      - redis
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/radiox
+      - REDIS_URL=redis://redis:6379
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - GOOGLE_CLOUD_TTS_KEY=${GOOGLE_CLOUD_TTS_KEY}
+    restart: always
+
+  # MongoDB database
+  mongo:
+    image: mongo:5.0
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+  # Redis for caching and job queues
+  redis:
+    image: redis:6.2-alpine
+    volumes:
+      - redis-data:/data
+    restart: always
+
+volumes:
+  mongo-data:
+  redis-data:
