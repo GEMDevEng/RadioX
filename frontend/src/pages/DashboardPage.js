@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
+import RecommendedContent from '../components/RecommendedContent';
 
 const DashboardPage = () => {
   const { currentUser } = useAuth();
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     audioClips: 0,
     podcasts: 0,
@@ -23,18 +26,18 @@ const DashboardPage = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        
+
         // In a real implementation, we would fetch this data from the API
         // For now, we'll use mock data
-        
+
         // Mock API call for stats
         // const { data: statsData } = await api.get('/usage/stats');
         // setStats(statsData);
-        
+
         // Mock API call for recent audio
         // const { data: audioData } = await api.get('/audio/recent');
         // setRecentAudio(audioData);
-        
+
         // Mock data for demonstration
         setStats({
           audioClips: 12,
@@ -46,7 +49,7 @@ const DashboardPage = () => {
             readRequestsLimit: 100,
           },
         });
-        
+
         setRecentAudio([
           {
             id: '1',
@@ -70,7 +73,7 @@ const DashboardPage = () => {
             imageUrl: 'https://via.placeholder.com/150',
           },
         ]);
-        
+
       } catch (err) {
         setError('Failed to load dashboard data');
         console.error(err);
@@ -262,15 +265,33 @@ const DashboardPage = () => {
         </div>
       </div>
 
+      {/* Recommended Content */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">{t('recommendations.title')}</h2>
+          <Link
+            to="/smart-search"
+            className="text-primary-600 hover:text-primary-500"
+          >
+            {t('recommendations.viewAll')}
+          </Link>
+        </div>
+        <RecommendedContent
+          type="audio"
+          limit={4}
+          onPlay={(item) => console.log('Play item:', item)}
+        />
+      </div>
+
       {/* Recent Audio */}
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Recent Audio</h2>
+          <h2 className="text-2xl font-bold">{t('dashboard.recentAudio')}</h2>
           <Link
             to="/library"
             className="text-primary-600 hover:text-primary-500"
           >
-            View all
+            {t('common.viewAll')}
           </Link>
         </div>
 

@@ -23,6 +23,7 @@ const Navbar = () => {
       ? [
           { name: t('nav.dashboard'), href: '/dashboard', current: false },
           { name: t('nav.search'), href: '/search', current: false },
+          { name: t('nav.smartSearch'), href: '/smart-search', current: false },
           { name: t('nav.library'), href: '/library', current: false },
           { name: t('nav.podcast'), href: '/podcast', current: false },
           { name: t('nav.analytics'), href: '/analytics', current: false },

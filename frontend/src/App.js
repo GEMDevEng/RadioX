@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import SearchPage from './pages/SearchPage';
+import SmartSearchPage from './pages/SmartSearchPage';
 import AudioLibraryPage from './pages/AudioLibraryPage';
 import PodcastPage from './pages/PodcastPage';
 import ProfilePage from './pages/ProfilePage';
@@ -52,6 +53,14 @@ function App() {
           element={
             <PrivateRoute>
               <SearchPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="smart-search"
+          element={
+            <PrivateRoute>
+              <SmartSearchPage />
             </PrivateRoute>
           }
         />

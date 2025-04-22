@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import AIPodcastCreator from '../components/AIPodcastCreator';
 
 const PodcastPage = () => {
+  const { t } = useTranslation();
   const [podcasts, setPodcasts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEpisodesModal, setShowEpisodesModal] = useState(false);
+  const [showAICreator, setShowAICreator] = useState(false);
   const [selectedPodcast, setSelectedPodcast] = useState(null);
   const [availableAudio, setAvailableAudio] = useState([]);
 
@@ -28,11 +32,11 @@ const PodcastPage = () => {
     const fetchPodcasts = async () => {
       try {
         setLoading(true);
-        
+
         // In a real implementation, we would fetch from the API
         // const { data } = await api.get('/podcast');
         // setPodcasts(data);
-        
+
         // Mock data for demonstration
         setTimeout(() => {
           const mockPodcasts = [
@@ -67,11 +71,11 @@ const PodcastPage = () => {
               lastUpdated: '2023-05-05T11:30:00Z',
             },
           ];
-          
+
           setPodcasts(mockPodcasts);
           setLoading(false);
         }, 1000);
-        
+
       } catch (err) {
         setError('Failed to load podcasts');
         setLoading(false);
@@ -83,13 +87,13 @@ const PodcastPage = () => {
 
   const handleCreatePodcast = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!newPodcast.title || !newPodcast.description || !newPodcast.author || !newPodcast.email) {
       setError('Please fill in all required fields');
       return;
     }
-    
+
     try {
       // In a real implementation, we would submit to the API
       // const formData = new FormData();
@@ -98,7 +102,7 @@ const PodcastPage = () => {
       // });
       // const { data } = await api.post('/podcast', formData);
       // setPodcasts([...podcasts, data]);
-      
+
       // Mock response for demonstration
       const mockNewPodcast = {
         id: Date.now().toString(),
@@ -109,9 +113,9 @@ const PodcastPage = () => {
         createdAt: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
       };
-      
+
       setPodcasts([...podcasts, mockNewPodcast]);
-      
+
       // Reset form and close modal
       setNewPodcast({
         title: '',
@@ -125,7 +129,7 @@ const PodcastPage = () => {
         imagePreview: null,
       });
       setShowCreateModal(false);
-      
+
     } catch (err) {
       setError('Failed to create podcast');
     }
@@ -147,7 +151,7 @@ const PodcastPage = () => {
       try {
         // In a real implementation, we would call the API
         // await api.delete(`/podcast/${podcastId}`);
-        
+
         // Update state to remove the deleted podcast
         setPodcasts(podcasts.filter((podcast) => podcast.id !== podcastId));
       } catch (err) {
@@ -158,12 +162,12 @@ const PodcastPage = () => {
 
   const handleOpenEpisodesModal = async (podcast) => {
     setSelectedPodcast(podcast);
-    
+
     try {
       // In a real implementation, we would fetch available audio clips
       // const { data } = await api.get('/audio/clips');
       // setAvailableAudio(data);
-      
+
       // Mock data for demonstration
       const mockAudioClips = [
         {
@@ -207,10 +211,10 @@ const PodcastPage = () => {
           isInPodcast: false,
         },
       ];
-      
+
       setAvailableAudio(mockAudioClips);
       setShowEpisodesModal(true);
-      
+
     } catch (err) {
       setError('Failed to load audio clips');
     }
@@ -220,7 +224,7 @@ const PodcastPage = () => {
     try {
       // In a real implementation, we would call the API
       // await api.post(`/podcast/${selectedPodcast.id}/episodes/toggle`, { audioId });
-      
+
       // Update state to toggle the episode
       setAvailableAudio(
         availableAudio.map((audio) =>
@@ -229,17 +233,17 @@ const PodcastPage = () => {
             : audio
         )
       );
-      
+
       // Update episode count in the selected podcast
       const updatedCount = availableAudio.find(audio => audio.id === audioId).isInPodcast
         ? selectedPodcast.episodeCount - 1
         : selectedPodcast.episodeCount + 1;
-      
+
       setSelectedPodcast({
         ...selectedPodcast,
         episodeCount: updatedCount,
       });
-      
+
       // Update the podcast in the podcasts list
       setPodcasts(
         podcasts.map((podcast) =>
@@ -248,7 +252,7 @@ const PodcastPage = () => {
             : podcast
         )
       );
-      
+
     } catch (err) {
       setError('Failed to update episode');
     }
@@ -266,17 +270,33 @@ const PodcastPage = () => {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Your Podcasts</h1>
+          <h1 className="text-3xl font-bold">{t('podcast.yourPodcasts')}</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Manage your podcasts and episodes
+            {t('podcast.managePodcastsDescription')}
           </p>
         </div>
-        <button
-          className="btn-primary"
-          onClick={() => setShowCreateModal(true)}
-        >
-          Create New Podcast
-        </button>
+        <div className="flex space-x-3">
+          <button
+            className="btn-outline flex items-center"
+            onClick={() => setShowAICreator(true)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+            </svg>
+            {t('ai.createWithAI')}
+          </button>
+          <button
+            className="btn-primary"
+            onClick={() => setShowCreateModal(true)}
+          >
+            {t('podcast.createManually')}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -289,14 +309,30 @@ const PodcastPage = () => {
       {podcasts.length === 0 ? (
         <div className="card p-6 text-center">
           <p className="text-gray-600 dark:text-gray-400">
-            You haven't created any podcasts yet.
+            {t('podcast.noPodcasts')}
           </p>
-          <button
-            className="btn-primary mt-4"
-            onClick={() => setShowCreateModal(true)}
-          >
-            Create Your First Podcast
-          </button>
+          <div className="flex space-x-3 justify-center mt-4">
+            <button
+              className="btn-outline flex items-center"
+              onClick={() => setShowAICreator(true)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+              </svg>
+              {t('ai.createWithAI')}
+            </button>
+            <button
+              className="btn-primary"
+              onClick={() => setShowCreateModal(true)}
+            >
+              {t('podcast.createManually')}
+            </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-6">
@@ -611,6 +647,48 @@ const PodcastPage = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Podcast Creator Modal */}
+      {showAICreator && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">{t('ai.createPodcastWithAI')}</h2>
+                <button
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowAICreator(false)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <AIPodcastCreator
+                selectedAudioClips={availableAudio.filter(audio => !audio.isInPodcast)}
+                onComplete={(newPodcast) => {
+                  // Add the new podcast to the list
+                  setPodcasts([...podcasts, newPodcast]);
+                  // Close the modal
+                  setShowAICreator(false);
+                }}
+              />
             </div>
           </div>
         </div>

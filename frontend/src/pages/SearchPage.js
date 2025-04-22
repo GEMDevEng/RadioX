@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const SearchPage = () => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchType, setSearchType] = useState('hashtag'); // hashtag, user, or url
   const [filters, setFilters] = useState({
@@ -18,16 +20,16 @@ const SearchPage = () => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    
+
     if (!searchTerm.trim()) {
       setError('Please enter a search term');
       return;
     }
-    
+
     try {
       setLoading(true);
       setError('');
-      
+
       // In a real implementation, we would call the API
       // const { data } = await api.get('/search/posts', {
       //   params: {
@@ -39,7 +41,7 @@ const SearchPage = () => {
       //   },
       // });
       // setSearchResults(data);
-      
+
       // Mock data for demonstration
       setTimeout(() => {
         const mockResults = [
@@ -105,12 +107,12 @@ const SearchPage = () => {
             createdAt: '2023-05-10T11:05:00Z',
           },
         ];
-        
+
         setSearchResults(mockResults);
         setSearched(true);
         setLoading(false);
       }, 1000);
-      
+
     } catch (err) {
       setError('Failed to search posts. Please try again.');
       setLoading(false);
@@ -132,7 +134,7 @@ const SearchPage = () => {
       setError('Please select at least one post to convert');
       return;
     }
-    
+
     // In a real implementation, we would navigate to a conversion page
     // or open a modal with conversion options
     alert(`Converting posts: ${selectedPosts.join(', ')}`);
