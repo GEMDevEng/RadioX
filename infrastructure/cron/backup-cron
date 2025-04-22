@@ -1,0 +1,9 @@
+# Cron configuration for RadioX backups
+# Run daily database backup at 2:00 AM
+0 2 * * * /opt/radiox/scripts/backup-database.sh >> /var/log/radiox/backup.log 2>&1
+
+# Run weekly full backup on Sundays at 3:00 AM
+0 3 * * 0 /opt/radiox/scripts/backup-database.sh --full >> /var/log/radiox/backup-full.log 2>&1
+
+# Clean up logs older than 30 days at 4:00 AM every day
+0 4 * * * find /var/log/radiox -name "*.log" -type f -mtime +30 -delete

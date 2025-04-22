@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { FiHome, FiGrid, FiSearch, FiBarChart2, FiBookOpen, FiRadio, FiMoon, FiSun } from 'react-icons/fi';
+import { FiHome, FiGrid, FiSearch, FiBarChart2, FiBookOpen, FiRadio, FiMoon, FiSun, FiHeart } from 'react-icons/fi';
 import LanguageSelector from './LanguageSelector';
 
 const Navbar = () => {
@@ -44,6 +44,7 @@ const Navbar = () => {
           { name: t('nav.smartSearch'), href: '/smart-search', icon: FiSearch, current: location.pathname === '/smart-search' },
           { name: t('nav.library'), href: '/library', icon: FiBookOpen, current: location.pathname === '/library' },
           { name: t('nav.podcast'), href: '/podcast', icon: FiRadio, current: location.pathname === '/podcast' },
+          { name: t('nav.favorites'), href: '/favorites', icon: FiHeart, current: location.pathname === '/favorites' },
           { name: t('nav.analytics'), href: '/analytics', icon: FiBarChart2, current: location.pathname === '/analytics' },
         ]
       : []),

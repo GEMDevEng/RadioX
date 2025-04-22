@@ -2,79 +2,85 @@ import React, { useState } from 'react';
 import { FiGrid, FiList, FiFilter } from 'react-icons/fi';
 import useDeviceDetect from '../hooks/useDeviceDetect';
 import MobileAudioPlayer from './MobileAudioPlayer';
+import FavoriteButton from './FavoriteButton';
+import { useTranslation } from 'react-i18next';
 
-const ResponsiveAudioGrid = ({ 
-  audioClips, 
-  onPlay, 
-  onDownload, 
-  onShare, 
+const ResponsiveAudioGrid = ({
+  items,
+  onPlay,
+  onDownload,
+  onShare,
   onDelete,
   isLoading,
-  emptyMessage = 'No audio clips found'
+  emptyMessage = 'No items found',
+  showFavoriteButton = false,
+  onToggleFavorite
 }) => {
+  const { t } = useTranslation();
+  const audioClips = items; // For backward compatibility
   const [viewMode, setViewMode] = useState('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(null);
   const [showMobilePlayer, setShowMobilePlayer] = useState(false);
-  
+
   const { isMobile, isTablet } = useDeviceDetect();
-  
+
   // Handle play button click
   const handlePlay = (index) => {
     setCurrentAudioIndex(index);
-    
+
     if (isMobile || isTablet) {
       setShowMobilePlayer(true);
     }
-    
+
     if (onPlay) {
       onPlay(audioClips[index]);
     }
   };
-  
+
   // Handle next track
   const handleNext = () => {
     if (currentAudioIndex !== null && currentAudioIndex < audioClips.length - 1) {
       const nextIndex = currentAudioIndex + 1;
       setCurrentAudioIndex(nextIndex);
-      
+
       if (onPlay) {
         onPlay(audioClips[nextIndex]);
       }
     }
   };
-  
+
   // Handle previous track
   const handlePrevious = () => {
     if (currentAudioIndex !== null && currentAudioIndex > 0) {
       const prevIndex = currentAudioIndex - 1;
       setCurrentAudioIndex(prevIndex);
-      
+
       if (onPlay) {
         onPlay(audioClips[prevIndex]);
       }
     }
   };
-  
+
   // Handle download
   const handleDownload = () => {
     if (currentAudioIndex !== null && onDownload) {
       onDownload(audioClips[currentAudioIndex]);
     }
   };
-  
+
   // Handle share
   const handleShare = () => {
     if (currentAudioIndex !== null && onShare) {
       onShare(audioClips[currentAudioIndex]);
     }
   };
-  
+
   // Handle close mobile player
   const handleCloseMobilePlayer = () => {
     setShowMobilePlayer(false);
   };
-  
+
   // Render loading state
   if (isLoading) {
     return (
@@ -83,7 +89,7 @@ const ResponsiveAudioGrid = ({
       </div>
     );
   }
-  
+
   // Render empty state
   if (!audioClips || audioClips.length === 0) {
     return (
@@ -92,7 +98,7 @@ const ResponsiveAudioGrid = ({
       </div>
     );
   }
-  
+
   return (
     <div>
       {/* View Controls */}
@@ -119,23 +125,23 @@ const ResponsiveAudioGrid = ({
             <FiList className="w-5 h-5" />
           </button>
         </div>
-        
+
         <button
           onClick={() => setShowFilters(!showFilters)}
           className="flex items-center p-2 text-gray-700 hover:text-indigo-600"
         >
           <FiFilter className="w-5 h-5 mr-1" />
-          <span className="hidden sm:inline">Filters</span>
+          <span className="hidden sm:inline">{t('common.filter')}</span>
         </button>
       </div>
-      
+
       {/* Filters */}
       {showFilters && (
         <div className="bg-gray-50 p-4 rounded-lg mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Source Type
+                {t('library.sourceType')}
               </label>
               <select className="form-select w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                 <option value="">All Sources</option>
@@ -144,22 +150,22 @@ const ResponsiveAudioGrid = ({
                 <option value="custom">Custom</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Duration
+                {t('library.duration')}
               </label>
               <select className="form-select w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                 <option value="">Any Duration</option>
-                <option value="short">Short (< 1 min)</option>
+                <option value="short">Short (&lt; 1 min)</option>
                 <option value="medium">Medium (1-3 min)</option>
-                <option value="long">Long (> 3 min)</option>
+                <option value="long">Long (&gt; 3 min)</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sort By
+                {t('library.sortBy')}
               </label>
               <select className="form-select w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                 <option value="newest">Newest First</option>
@@ -171,7 +177,7 @@ const ResponsiveAudioGrid = ({
           </div>
         </div>
       )}
-      
+
       {/* Grid View */}
       {viewMode === 'grid' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -221,7 +227,16 @@ const ResponsiveAudioGrid = ({
                 </button>
               </div>
               <div className="p-4">
-                <h3 className="font-semibold text-lg mb-1 truncate">{clip.title}</h3>
+                <div className="flex justify-between items-start">
+                  <h3 className="font-semibold text-lg mb-1 truncate">{clip.title}</h3>
+                  {showFavoriteButton && (
+                    <FavoriteButton
+                      itemId={clip._id}
+                      itemType={clip.type === 'podcast' ? 'Podcast' : 'AudioClip'}
+                      onToggle={onToggleFavorite}
+                    />
+                  )}
+                </div>
                 <p className="text-sm text-gray-500 mb-2">
                   {clip.sourceAuthor?.name || 'Unknown Author'}
                 </p>
@@ -234,7 +249,7 @@ const ResponsiveAudioGrid = ({
           ))}
         </div>
       )}
-      
+
       {/* List View */}
       {viewMode === 'list' && (
         <div className="space-y-4">
@@ -285,7 +300,16 @@ const ResponsiveAudioGrid = ({
                   </button>
                 </div>
                 <div className="p-4 flex-grow">
-                  <h3 className="font-semibold text-lg mb-1">{clip.title}</h3>
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-semibold text-lg mb-1">{clip.title}</h3>
+                    {showFavoriteButton && (
+                      <FavoriteButton
+                        itemId={clip._id}
+                        itemType={clip.type === 'podcast' ? 'Podcast' : 'AudioClip'}
+                        onToggle={onToggleFavorite}
+                      />
+                    )}
+                  </div>
                   <p className="text-sm text-gray-500 mb-2">
                     {clip.sourceAuthor?.name || 'Unknown Author'}
                   </p>
@@ -304,7 +328,7 @@ const ResponsiveAudioGrid = ({
                           onClick={() => onDownload(clip)}
                           className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
                         >
-                          Download
+                          {t('common.download')}
                         </button>
                       )}
                       {onShare && (
@@ -312,7 +336,7 @@ const ResponsiveAudioGrid = ({
                           onClick={() => onShare(clip)}
                           className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
                         >
-                          Share
+                          {t('common.share')}
                         </button>
                       )}
                       {onDelete && (
@@ -320,7 +344,7 @@ const ResponsiveAudioGrid = ({
                           onClick={() => onDelete(clip)}
                           className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded"
                         >
-                          Delete
+                          {t('common.delete')}
                         </button>
                       )}
                     </div>
@@ -331,7 +355,7 @@ const ResponsiveAudioGrid = ({
           ))}
         </div>
       )}
-      
+
       {/* Mobile Audio Player */}
       {showMobilePlayer && currentAudioIndex !== null && (
         <MobileAudioPlayer

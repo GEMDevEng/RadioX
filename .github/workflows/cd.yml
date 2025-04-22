@@ -3,77 +3,150 @@ name: CD
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '16'
           cache: 'npm'
-          
+
       - name: Install dependencies
         run: |
           npm ci
           cd frontend && npm ci
-        
+
       - name: Build frontend
         run: cd frontend && npm run build
-        
+        env:
+          REACT_APP_API_URL: ${{ secrets.API_URL }}
+          REACT_APP_ENVIRONMENT: ${{ github.event.inputs.environment || 'staging' }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-        
+
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          
+
+      - name: Set Docker image tags
+        id: set-tags
+        run: |
+          ENVIRONMENT=${{ github.event.inputs.environment || 'staging' }}
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+
+          if [ "$ENVIRONMENT" = "production" ]; then
+            echo "::set-output name=frontend_tag::${{ secrets.DOCKER_HUB_USERNAME }}/radiox-frontend:latest,${{ secrets.DOCKER_HUB_USERNAME }}/radiox-frontend:${TIMESTAMP}"
+            echo "::set-output name=backend_tag::${{ secrets.DOCKER_HUB_USERNAME }}/radiox-backend:latest,${{ secrets.DOCKER_HUB_USERNAME }}/radiox-backend:${TIMESTAMP}"
+            echo "::set-output name=processing_tag::${{ secrets.DOCKER_HUB_USERNAME }}/radiox-processing:latest,${{ secrets.DOCKER_HUB_USERNAME }}/radiox-processing:${TIMESTAMP}"
+          else
+            echo "::set-output name=frontend_tag::${{ secrets.DOCKER_HUB_USERNAME }}/radiox-frontend:staging,${{ secrets.DOCKER_HUB_USERNAME }}/radiox-frontend:staging-${TIMESTAMP}"
+            echo "::set-output name=backend_tag::${{ secrets.DOCKER_HUB_USERNAME }}/radiox-backend:staging,${{ secrets.DOCKER_HUB_USERNAME }}/radiox-backend:staging-${TIMESTAMP}"
+            echo "::set-output name=processing_tag::${{ secrets.DOCKER_HUB_USERNAME }}/radiox-processing:staging,${{ secrets.DOCKER_HUB_USERNAME }}/radiox-processing:staging-${TIMESTAMP}"
+          fi
+
       - name: Build and push frontend Docker image
         uses: docker/build-push-action@v4
         with:
           context: ./frontend
           file: ./infrastructure/docker/Dockerfile.frontend
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/radiox-frontend:latest
+          tags: ${{ steps.set-tags.outputs.frontend_tag }}
           target: production
-          
+          build-args: |
+            REACT_APP_API_URL=${{ secrets.API_URL }}
+            REACT_APP_ENVIRONMENT=${{ github.event.inputs.environment || 'staging' }}
+
       - name: Build and push backend Docker image
         uses: docker/build-push-action@v4
         with:
           context: ./backend
           file: ./infrastructure/docker/Dockerfile.backend
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/radiox-backend:latest
+          tags: ${{ steps.set-tags.outputs.backend_tag }}
           target: production
-          
+
       - name: Build and push processing Docker image
         uses: docker/build-push-action@v4
         with:
           context: ./processing
           file: ./infrastructure/docker/Dockerfile.backend
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/radiox-processing:latest
+          tags: ${{ steps.set-tags.outputs.processing_tag }}
           target: production
-      
-      # Deploy to production server
-      # This step would typically use SSH to connect to your server and update the deployment
-      # For example, using docker-compose to pull the latest images and restart the services
-      - name: Deploy to production server
+
+      # Deploy to server
+      - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /path/to/radiox
-            git pull
-            docker-compose -f docker-compose.prod.yml pull
-            docker-compose -f docker-compose.prod.yml up -d
+            ENVIRONMENT=${{ github.event.inputs.environment || 'staging' }}
+
+            if [ "$ENVIRONMENT" = "production" ]; then
+              cd /opt/radiox/production
+              docker-compose -f docker-compose.prod.yml pull
+              docker-compose -f docker-compose.prod.yml up -d
+            else
+              cd /opt/radiox/staging
+              docker-compose -f docker-compose.staging.yml pull
+              docker-compose -f docker-compose.staging.yml up -d
+            fi
+
+      # Run smoke tests after deployment
+      - name: Run smoke tests
+        run: |
+          ENVIRONMENT=${{ github.event.inputs.environment || 'staging' }}
+          API_URL=${{ secrets.API_URL }}
+
+          # Wait for services to be ready
+          sleep 30
+
+          # Check if API is responding
+          curl -f "${API_URL}/health" || exit 1
+
+          # Run additional smoke tests
+          npm run test:smoke -- --env=$ENVIRONMENT
+
+      # Set up monitoring and logging
+      - name: Set up monitoring and logging
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            ENVIRONMENT=${{ github.event.inputs.environment || 'staging' }}
+
+            if [ "$ENVIRONMENT" = "production" ]; then
+              cd /opt/radiox/production
+              docker-compose -f docker-compose.monitoring.yml up -d
+              docker-compose -f docker-compose.logging.yml up -d
+            else
+              cd /opt/radiox/staging
+              docker-compose -f docker-compose.monitoring.yml up -d
+              docker-compose -f docker-compose.logging.yml up -d
+            fi

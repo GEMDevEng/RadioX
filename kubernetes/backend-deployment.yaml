@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: radiox-backend
+  labels:
+    app: radiox-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: radiox-backend
+  template:
+    metadata:
+      labels:
+        app: radiox-backend
+    spec:
+      containers:
+      - name: radiox-backend
+        image: radiox/backend:latest
+        ports:
+        - containerPort: 4000
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "4000"
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: radiox-secrets
+              key: mongodb-uri
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: radiox-secrets
+              key: jwt-secret
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: radiox-secrets
+              key: redis-url
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: radiox-secrets
+              key: aws-access-key-id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: radiox-secrets
+              key: aws-secret-access-key
+        - name: S3_BUCKET
+          value: "radiox-audio-files"
+        - name: FRONTEND_URL
+          value: "https://radiox.example.com"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: logs
+          mountPath: /app/backend/logs
+      volumes:
+      - name: logs
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: radiox-backend-service
+spec:
+  selector:
+    app: radiox-backend
+  ports:
+  - port: 80
+    targetPort: 4000
+  type: ClusterIP

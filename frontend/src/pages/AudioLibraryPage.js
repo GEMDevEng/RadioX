@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import ExportOptions from '../components/ExportOptions';
 
 const AudioLibraryPage = () => {
+  const { t } = useTranslation();
   const [audioClips, setAudioClips] = useState([]);
   const [filteredClips, setFilteredClips] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,18 +13,18 @@ const AudioLibraryPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
-  
+
   const clipsPerPage = 9;
 
   useEffect(() => {
     const fetchAudioClips = async () => {
       try {
         setLoading(true);
-        
+
         // In a real implementation, we would fetch from the API
         // const { data } = await api.get('/audio/clips');
         // setAudioClips(data);
-        
+
         // Mock data for demonstration
         setTimeout(() => {
           const mockClips = [
@@ -194,11 +197,11 @@ const AudioLibraryPage = () => {
               },
             },
           ];
-          
+
           setAudioClips(mockClips);
           setLoading(false);
         }, 1000);
-        
+
       } catch (err) {
         setError('Failed to load audio clips');
         setLoading(false);
@@ -211,7 +214,7 @@ const AudioLibraryPage = () => {
   // Filter and sort clips when dependencies change
   useEffect(() => {
     let result = [...audioClips];
-    
+
     // Apply search filter
     if (searchTerm) {
       const lowerCaseSearch = searchTerm.toLowerCase();
@@ -223,7 +226,7 @@ const AudioLibraryPage = () => {
           clip.user.username.toLowerCase().includes(lowerCaseSearch)
       );
     }
-    
+
     // Apply sorting
     switch (sortBy) {
       case 'newest':
@@ -238,7 +241,7 @@ const AudioLibraryPage = () => {
           const aSeconds = parseInt(a.duration.split(':')[1]);
           const bMinutes = parseInt(b.duration.split(':')[0]);
           const bSeconds = parseInt(b.duration.split(':')[1]);
-          
+
           return bMinutes * 60 + bSeconds - (aMinutes * 60 + aSeconds);
         });
         break;
@@ -248,7 +251,7 @@ const AudioLibraryPage = () => {
           const aSeconds = parseInt(a.duration.split(':')[1]);
           const bMinutes = parseInt(b.duration.split(':')[0]);
           const bSeconds = parseInt(b.duration.split(':')[1]);
-          
+
           return aMinutes * 60 + aSeconds - (bMinutes * 60 + bSeconds);
         });
         break;
@@ -258,7 +261,7 @@ const AudioLibraryPage = () => {
       default:
         break;
     }
-    
+
     setFilteredClips(result);
     setCurrentPage(1); // Reset to first page when filters change
   }, [audioClips, searchTerm, sortBy]);
@@ -279,7 +282,7 @@ const AudioLibraryPage = () => {
       try {
         // In a real implementation, we would call the API
         // await api.delete(`/audio/clips/${clipId}`);
-        
+
         // Update state to remove the deleted clip
         setAudioClips(audioClips.filter((clip) => clip.id !== clipId));
       } catch (err) {
@@ -304,9 +307,9 @@ const AudioLibraryPage = () => {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Audio Library</h1>
+        <h1 className="text-3xl font-bold">{t('library.title')}</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Manage your converted audio clips
+          {t('library.description')}
         </p>
       </div>
 
@@ -453,49 +456,54 @@ const AudioLibraryPage = () => {
                     {new Date(clip.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between">
-                  <a
-                    href={clip.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary-600 hover:text-primary-500 text-sm flex items-center"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <div className="mb-3">
+                    <ExportOptions item={clip} type="audio" />
+                  </div>
+                  <div className="flex justify-between">
+                    <a
+                      href={clip.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary-600 hover:text-primary-500 text-sm flex items-center"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                    View Source
-                  </a>
-                  <button
-                    className="text-red-600 hover:text-red-500 text-sm flex items-center"
-                    onClick={() => handleDeleteClip(clip.id)}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
+                      {t('common.viewSource')}
+                    </a>
+                    <button
+                      className="text-red-600 hover:text-red-500 text-sm flex items-center"
+                      onClick={() => handleDeleteClip(clip.id)}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                    Delete
-                  </button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      {t('common.delete')}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -10,6 +10,7 @@
     "smartSearch": "Smart Search",
     "library": "Library",
     "podcast": "Podcast",
+    "favorites": "Favorites",
     "analytics": "Analytics",
     "profile": "Profile",
     "login": "Login",
@@ -380,6 +381,64 @@
     "basedOnYourInterests": "Based on your interests",
     "trending": "Trending now",
     "similar": "Similar to what you've listened to"
+  },
+  "favorites": {
+    "title": "Favorites",
+    "all": "All",
+    "audioClips": "Audio Clips",
+    "podcasts": "Podcasts",
+    "noFavorites": "No favorites yet",
+    "noFavoritesDescription": "Items you mark as favorites will appear here",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "fetchError": "Failed to fetch favorites",
+    "addedToFavorites": "Added to favorites",
+    "removedFromFavorites": "Removed from favorites",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "remove": "Remove"
+  },
+  "trending": {
+    "title": "Trending Hashtags",
+    "viewAll": "View All",
+    "fetchError": "Failed to fetch trending hashtags",
+    "noTrends": "No trending hashtags available",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "posts": "posts",
+    "suggestions": "Suggested Hashtags",
+    "suggestionsDescription": "Based on your activity",
+    "explore": "Explore"
+  },
+  "export": {
+    "download": "Download",
+    "share": "Share",
+    "embed": "Embed",
+    "downloadSuccess": "Download started",
+    "downloadError": "Failed to download file",
+    "shareError": "Failed to share item",
+    "linkCopied": "Link copied to clipboard",
+    "copyLink": "Copy Link",
+    "shareOnTwitter": "Share on Twitter",
+    "shareOnFacebook": "Share on Facebook",
+    "shareOnLinkedIn": "Share on LinkedIn",
+    "embedCode": "Embed Code",
+    "copyCode": "Copy Code",
+    "embedInstructions": "Copy this code and paste it into your website or blog to embed this audio."
+  },
+  "share": {
+    "by": "By",
+    "errorDescription": "The shared item could not be loaded. It may have been removed or the link may have expired.",
+    "itemNotFound": "Shared item not found",
+    "itemNotFoundDescription": "The item you're looking for doesn't exist or is no longer available.",
+    "exploreAudioLibrary": "Explore Audio Library",
+    "explorePodcasts": "Explore Podcasts"
+  },
+  "embed": {
+    "errorDescription": "The embedded content could not be loaded.",
+    "itemNotFound": "Content not found",
+    "itemNotFoundDescription": "The content you're trying to embed doesn't exist or is no longer available."
   },
   "search": {
     "smartSearch": "Smart Search",

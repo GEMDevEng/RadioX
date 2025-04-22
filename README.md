@@ -136,14 +136,45 @@ RadioX Free Edition allows users to convert up to 500 X posts per month into aud
    cd RadioX
    ```
 
-2. Set up environment variables for production.
-
-3. Build and start the application using Docker Compose:
+2. Set up environment variables for production:
    ```bash
-   docker-compose -f docker-compose.prod.yml up -d
+   cp .env.production.template .env.production
+   ```
+   Edit the `.env.production` file with your actual credentials and configuration.
+
+3. Create required directories:
+   ```bash
+   mkdir -p logs uploads backups ssl mongo-init redis
    ```
 
-4. Access the application at your configured domain.
+4. Generate SSL certificates for HTTPS:
+   ```bash
+   # For production, use a proper SSL certificate from a trusted CA
+   # For testing, you can generate a self-signed certificate:
+   openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+     -keyout ssl/radiox.key -out ssl/radiox.crt
+   ```
+
+5. Deploy the application using the deployment script:
+   ```bash
+   ./scripts/deploy-production.sh
+   ```
+
+6. Access the application at your configured domain.
+
+7. Monitor the application:
+   - Access Grafana dashboards at `http://your-domain:3001`
+   - View logs in the ELK stack at `http://your-domain:5601`
+
+8. Backup and restore:
+   - Automated backups run daily at 2:00 AM
+   - Manual backup: `./scripts/backup-database.sh`
+   - Restore from backup: `./scripts/restore-database.sh --latest`
+
+9. Rollback to a previous version if needed:
+   ```bash
+   ./scripts/rollback-production.sh <previous-tag>
+   ```
 
 ---
 

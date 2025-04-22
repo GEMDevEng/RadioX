@@ -15,6 +15,10 @@ import PodcastPage from './pages/PodcastPage';
 import ProfilePage from './pages/ProfilePage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import PodcastAnalyticsPage from './pages/PodcastAnalyticsPage';
+import FavoritesPage from './pages/FavoritesPage';
+import TrendingPage from './pages/TrendingPage';
+import SharedItemPage from './pages/SharedItemPage';
+import EmbedPage from './pages/EmbedPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -104,6 +108,26 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="favorites"
+          element={
+            <PrivateRoute>
+              <FavoritesPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="trending"
+          element={
+            <PrivateRoute>
+              <TrendingPage />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Shared and Embed routes */}
+        <Route path="share/:token" element={<SharedItemPage />} />
+        <Route path="embed/:type/:id" element={<EmbedPage />} />
 
         {/* 404 route */}
         <Route path="*" element={<NotFoundPage />} />

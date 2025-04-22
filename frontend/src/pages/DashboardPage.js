@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import RecommendedContent from '../components/RecommendedContent';
+import TrendingHashtags from '../components/TrendingHashtags';
 
 const DashboardPage = () => {
   const { currentUser } = useAuth();
@@ -265,22 +266,39 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Recommended Content */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">{t('recommendations.title')}</h2>
-          <Link
-            to="/smart-search"
-            className="text-primary-600 hover:text-primary-500"
-          >
-            {t('recommendations.viewAll')}
-          </Link>
+      {/* Trending and Recommendations */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Trending Hashtags */}
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">{t('trending.title')}</h2>
+            <Link
+              to="/trending"
+              className="text-primary-600 hover:text-primary-500"
+            >
+              {t('trending.viewAll')}
+            </Link>
+          </div>
+          <TrendingHashtags limit={5} />
         </div>
-        <RecommendedContent
-          type="audio"
-          limit={4}
-          onPlay={(item) => console.log('Play item:', item)}
-        />
+
+        {/* Recommended Content */}
+        <div className="lg:col-span-2">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">{t('recommendations.title')}</h2>
+            <Link
+              to="/smart-search"
+              className="text-primary-600 hover:text-primary-500"
+            >
+              {t('recommendations.viewAll')}
+            </Link>
+          </div>
+          <RecommendedContent
+            type="audio"
+            limit={4}
+            onPlay={(item) => console.log('Play item:', item)}
+          />
+        </div>
       </div>
 
       {/* Recent Audio */}

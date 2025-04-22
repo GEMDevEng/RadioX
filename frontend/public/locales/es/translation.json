@@ -10,6 +10,7 @@
     "smartSearch": "Búsqueda Inteligente",
     "library": "Biblioteca",
     "podcast": "Podcast",
+    "favorites": "Favoritos",
     "analytics": "Analíticas",
     "profile": "Perfil",
     "login": "Iniciar sesión",
@@ -374,6 +375,64 @@
     "basedOnYourInterests": "Basado en tus intereses",
     "trending": "Tendencias actuales",
     "similar": "Similar a lo que has escuchado"
+  },
+  "favorites": {
+    "title": "Favoritos",
+    "all": "Todos",
+    "audioClips": "Clips de audio",
+    "podcasts": "Podcasts",
+    "noFavorites": "Aún no hay favoritos",
+    "noFavoritesDescription": "Los elementos que marques como favoritos aparecerán aquí",
+    "addToFavorites": "Añadir a favoritos",
+    "removeFromFavorites": "Eliminar de favoritos",
+    "fetchError": "Error al obtener favoritos",
+    "addedToFavorites": "Añadido a favoritos",
+    "removedFromFavorites": "Eliminado de favoritos",
+    "gridView": "Vista de cuadrícula",
+    "listView": "Vista de lista",
+    "remove": "Eliminar"
+  },
+  "trending": {
+    "title": "Hashtags Tendencia",
+    "viewAll": "Ver todos",
+    "fetchError": "Error al obtener hashtags tendencia",
+    "noTrends": "No hay hashtags tendencia disponibles",
+    "daily": "Diario",
+    "weekly": "Semanal",
+    "monthly": "Mensual",
+    "posts": "publicaciones",
+    "suggestions": "Hashtags sugeridos",
+    "suggestionsDescription": "Basado en tu actividad",
+    "explore": "Explorar"
+  },
+  "export": {
+    "download": "Descargar",
+    "share": "Compartir",
+    "embed": "Incrustar",
+    "downloadSuccess": "Descarga iniciada",
+    "downloadError": "Error al descargar archivo",
+    "shareError": "Error al compartir elemento",
+    "linkCopied": "Enlace copiado al portapapeles",
+    "copyLink": "Copiar enlace",
+    "shareOnTwitter": "Compartir en Twitter",
+    "shareOnFacebook": "Compartir en Facebook",
+    "shareOnLinkedIn": "Compartir en LinkedIn",
+    "embedCode": "Código para incrustar",
+    "copyCode": "Copiar código",
+    "embedInstructions": "Copia este código y pégalo en tu sitio web o blog para incrustar este audio."
+  },
+  "share": {
+    "by": "Por",
+    "errorDescription": "No se pudo cargar el elemento compartido. Es posible que se haya eliminado o que el enlace haya caducado.",
+    "itemNotFound": "Elemento compartido no encontrado",
+    "itemNotFoundDescription": "El elemento que buscas no existe o ya no está disponible.",
+    "exploreAudioLibrary": "Explorar biblioteca de audio",
+    "explorePodcasts": "Explorar podcasts"
+  },
+  "embed": {
+    "errorDescription": "No se pudo cargar el contenido incrustado.",
+    "itemNotFound": "Contenido no encontrado",
+    "itemNotFoundDescription": "El contenido que intentas incrustar no existe o ya no está disponible."
   },
   "search": {
     "smartSearch": "Búsqueda inteligente",

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import TrendingHashtags from '../components/TrendingHashtags';
 
 const SearchPage = () => {
   const { t } = useTranslation();
@@ -306,6 +307,14 @@ const SearchPage = () => {
           </div>
         </form>
       </div>
+
+      {/* Trending Hashtags */}
+      {!searched && (
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">{t('trending.title')}</h2>
+          <TrendingHashtags limit={10} />
+        </div>
+      )}
 
       {/* Search Results */}
       {searched && (
