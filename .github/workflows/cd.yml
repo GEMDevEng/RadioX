@@ -67,7 +67,7 @@ jobs:
           fi
 
       - name: Build and push frontend Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: ./frontend
           file: ./infrastructure/docker/Dockerfile.frontend
@@ -79,7 +79,7 @@ jobs:
             REACT_APP_ENVIRONMENT=${{ github.event.inputs.environment || 'staging' }}
 
       - name: Build and push backend Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: ./backend
           file: ./infrastructure/docker/Dockerfile.backend
@@ -88,7 +88,7 @@ jobs:
           target: production
 
       - name: Build and push processing Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: ./processing
           file: ./infrastructure/docker/Dockerfile.backend
