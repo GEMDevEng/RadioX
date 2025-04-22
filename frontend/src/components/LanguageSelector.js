@@ -1,28 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { FiGlobe, FiCheck, FiChevronDown } from 'react-icons/fi';
-
-const languages = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-];
+import { useLanguage } from '../contexts/LanguageContext';
 
 const LanguageSelector = () => {
-  const { i18n } = useTranslation();
+  const { currentLanguage, changeLanguage, languages } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Get current language
-  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+  // Get current language object
+  const currentLangObj = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
   // Handle language change
-  const changeLanguage = (langCode) => {
-    i18n.changeLanguage(langCode);
-    setIsOpen(false);
-
-    // Save language preference to localStorage
-    localStorage.setItem('i18nextLng', langCode);
+  const handleLanguageChange = (langCode) => {
+    changeLanguage(langCode)
+      .then(() => {
+        setIsOpen(false);
+      })
+      .catch(error => {
+        console.error('Error changing language:', error);
+      });
   };
 
   // Close dropdown when clicking outside
@@ -46,7 +42,7 @@ const LanguageSelector = () => {
         onClick={() => setIsOpen(!isOpen)}
       >
         <FiGlobe className="w-5 h-5" />
-        <span className="hidden md:inline-block">{currentLanguage.flag}</span>
+        <span className="hidden md:inline-block">{currentLangObj.flag}</span>
         <FiChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} />
       </button>
 
@@ -56,11 +52,11 @@ const LanguageSelector = () => {
             <button
               key={language.code}
               className="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150"
-              onClick={() => changeLanguage(language.code)}
+              onClick={() => handleLanguageChange(language.code)}
             >
               <span className="mr-2">{language.flag}</span>
               <span>{language.name}</span>
-              {language.code === i18n.language && (
+              {language.code === currentLanguage && (
                 <FiCheck className="ml-auto text-indigo-500" />
               )}
             </button>
