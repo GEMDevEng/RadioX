@@ -6,6 +6,7 @@ services:
     build:
       context: ./frontend
       dockerfile: ../infrastructure/docker/Dockerfile.frontend
+      target: development
     ports:
       - "3000:3000"
     volumes:
@@ -16,12 +17,14 @@ services:
     environment:
       - NODE_ENV=development
       - REACT_APP_API_URL=http://localhost:5000/api
+    restart: unless-stopped
 
   # Backend Express API
   backend:
     build:
       context: ./backend
       dockerfile: ../infrastructure/docker/Dockerfile.backend
+      target: development
     ports:
       - "5000:5000"
     volumes:
@@ -35,14 +38,24 @@ services:
       - PORT=5000
       - MONGODB_URI=mongodb://mongo:27017/radiox
       - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=dev_jwt_secret
-      - JWT_EXPIRES_IN=7d
+      - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET:-radiox-audio-files}
+      - X_API_KEY=${X_API_KEY}
+      - X_API_SECRET=${X_API_SECRET}
+      - GOOGLE_CLOUD_TTS_KEY=${GOOGLE_CLOUD_TTS_KEY}
+      - API_URL=http://localhost:5000
+    restart: unless-stopped
 
   # Processing service for audio conversion
   processing:
     build:
       context: ./processing
       dockerfile: ../infrastructure/docker/Dockerfile.backend
+      target: development
     volumes:
       - ./processing:/app
       - /app/node_modules
@@ -53,6 +66,12 @@ services:
       - NODE_ENV=development
       - MONGODB_URI=mongodb://mongo:27017/radiox
       - REDIS_URL=redis://redis:6379
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET:-radiox-audio-files}
+      - GOOGLE_CLOUD_TTS_KEY=${GOOGLE_CLOUD_TTS_KEY}
+    restart: unless-stopped
 
   # MongoDB database
   mongo:
@@ -63,6 +82,7 @@ services:
       - mongo-data:/data/db
     environment:
       - MONGO_INITDB_DATABASE=radiox
+    restart: unless-stopped
 
   # Redis for caching and job queues
   redis:
@@ -71,10 +91,11 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    restart: unless-stopped
 
   # MongoDB admin interface
   mongo-express:
-    image: mongo-express
+    image: mongo-express:latest
     ports:
       - "8081:8081"
     depends_on:
@@ -84,6 +105,7 @@ services:
       - ME_CONFIG_MONGODB_PORT=27017
       - ME_CONFIG_BASICAUTH_USERNAME=admin
       - ME_CONFIG_BASICAUTH_PASSWORD=password
+    restart: unless-stopped
 
   # Redis admin interface
   redis-commander:
@@ -94,6 +116,7 @@ services:
       - redis
     environment:
       - REDIS_HOSTS=local:redis:6379
+    restart: unless-stopped
 
 volumes:
   mongo-data:
