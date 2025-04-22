@@ -128,7 +128,7 @@ jobs:
         run: cd frontend && npm run cypress:run
 
       - name: Upload Cypress screenshots on failure
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-screenshots
@@ -158,7 +158,7 @@ jobs:
         run: cd frontend && npm run build
 
       - name: Upload frontend build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-build
           path: frontend/build
