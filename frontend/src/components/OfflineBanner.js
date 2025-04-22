@@ -1,15 +1,17 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { FiWifi, FiWifiOff, FiX } from 'react-icons/fi';
 import useOfflineStatus from '../hooks/useOfflineStatus';
 
 const OfflineBanner = () => {
-  const { 
-    isOffline, 
-    isOfflineMode, 
+  const { t } = useTranslation();
+  const {
+    isOffline,
+    isOfflineMode,
     isManualOfflineMode,
-    formatOfflineDuration, 
-    enableOfflineMode, 
-    disableOfflineMode 
+    formatOfflineDuration,
+    enableOfflineMode,
+    disableOfflineMode
   } = useOfflineStatus();
 
   if (!isOfflineMode) {
@@ -27,30 +29,30 @@ const OfflineBanner = () => {
           )}
           <span className="text-sm font-medium">
             {isOffline
-              ? `You are offline (${formatOfflineDuration()})`
-              : 'Offline mode enabled'}
+              ? t('offline.youAreOffline', { duration: formatOfflineDuration() })
+              : t('offline.offlineModeEnabled')}
           </span>
         </div>
-        
+
         <div className="flex items-center">
           {!isOffline && isManualOfflineMode && (
             <button
               onClick={disableOfflineMode}
               className="text-xs bg-white text-yellow-700 px-2 py-1 rounded mr-2 hover:bg-yellow-100"
             >
-              Go Online
+              {t('offline.goOnline')}
             </button>
           )}
-          
+
           {!isOffline && !isManualOfflineMode && (
             <button
               onClick={enableOfflineMode}
               className="text-xs bg-white text-yellow-700 px-2 py-1 rounded mr-2 hover:bg-yellow-100"
             >
-              Stay in Offline Mode
+              {t('offline.stayInOfflineMode')}
             </button>
           )}
-          
+
           {!isOffline && (
             <button
               onClick={disableOfflineMode}

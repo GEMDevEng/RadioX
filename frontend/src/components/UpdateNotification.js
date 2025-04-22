@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FiRefreshCw } from 'react-icons/fi';
 
 const UpdateNotification = () => {
+  const { t } = useTranslation();
   const [waitingWorker, setWaitingWorker] = useState(null);
   const [showReload, setShowReload] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -78,7 +80,7 @@ const UpdateNotification = () => {
         </div>
         <div className="ml-3 flex-1">
           <p className="text-sm font-medium">
-            A new version of RadioX is available!
+            {t('updates.newVersionAvailable')}
           </p>
           <div className="mt-2 flex">
             <button
@@ -108,10 +110,10 @@ const UpdateNotification = () => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Updating...
+                  {t('updates.updating')}
                 </>
               ) : (
-                'Update Now'
+                t('updates.updateNow')
               )}
             </button>
           </div>
