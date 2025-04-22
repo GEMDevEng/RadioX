@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import LanguageSelector from './LanguageSelector';
 
 const Navbar = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -15,14 +18,14 @@ const Navbar = () => {
   };
 
   const navigation = [
-    { name: 'Home', href: '/', current: false },
+    { name: t('nav.home'), href: '/', current: false },
     ...(currentUser
       ? [
-          { name: 'Dashboard', href: '/dashboard', current: false },
-          { name: 'Search', href: '/search', current: false },
-          { name: 'Library', href: '/library', current: false },
-          { name: 'Podcast', href: '/podcast', current: false },
-          { name: 'Analytics', href: '/analytics', current: false },
+          { name: t('nav.dashboard'), href: '/dashboard', current: false },
+          { name: t('nav.search'), href: '/search', current: false },
+          { name: t('nav.library'), href: '/library', current: false },
+          { name: t('nav.podcast'), href: '/podcast', current: false },
+          { name: t('nav.analytics'), href: '/analytics', current: false },
         ]
       : []),
   ];
@@ -55,6 +58,10 @@ const Navbar = () => {
               </div>
               <div className="hidden md:block">
                 <div className="ml-4 flex items-center md:ml-6">
+                  <div className="mr-4">
+                    <LanguageSelector />
+                  </div>
+
                   {currentUser ? (
                     <div className="relative ml-3">
                       <Menu as="div" className="relative ml-3">
@@ -83,7 +90,7 @@ const Navbar = () => {
                                     active ? 'bg-gray-100' : ''
                                   } block px-4 py-2 text-sm text-gray-700`}
                                 >
-                                  Your Profile
+                                  {t('profile.title')}
                                 </Link>
                               )}
                             </Menu.Item>
@@ -95,7 +102,7 @@ const Navbar = () => {
                                     active ? 'bg-gray-100' : ''
                                   } block w-full text-left px-4 py-2 text-sm text-gray-700`}
                                 >
-                                  Sign out
+                                  {t('nav.logout')}
                                 </button>
                               )}
                             </Menu.Item>
@@ -105,17 +112,20 @@ const Navbar = () => {
                     </div>
                   ) : (
                     <div className="flex space-x-4">
+                      <div className="mr-4">
+                        <LanguageSelector />
+                      </div>
                       <Link
                         to="/login"
                         className="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium"
                       >
-                        Login
+                        {t('nav.login')}
                       </Link>
                       <Link
                         to="/register"
                         className="bg-white text-primary-600 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
                       >
-                        Register
+                        {t('nav.register')}
                       </Link>
                     </div>
                   )}
@@ -169,28 +179,31 @@ const Navbar = () => {
                     to="/profile"
                     className="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-primary-700"
                   >
-                    Your Profile
+                    {t('profile.title')}
                   </Link>
                   <button
                     onClick={handleLogout}
                     className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-white hover:bg-primary-700"
                   >
-                    Sign out
+                    {t('nav.logout')}
                   </button>
                 </div>
               ) : (
                 <div className="space-y-1 px-2">
+                  <div className="px-3 py-2">
+                    <LanguageSelector />
+                  </div>
                   <Link
                     to="/login"
                     className="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-primary-700"
                   >
-                    Login
+                    {t('nav.login')}
                   </Link>
                   <Link
                     to="/register"
                     className="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-primary-700"
                   >
-                    Register
+                    {t('nav.register')}
                   </Link>
                 </div>
               )}
