@@ -12,13 +12,17 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { FiDownload, FiCalendar, FiBarChart2 } from 'react-icons/fi';
+import { FiDownload, FiCalendar, FiBarChart2, FiUsers, FiTrendingUp, FiFileText } from 'react-icons/fi';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import Spinner from '../components/Spinner';
 import ErrorAlert from '../components/ErrorAlert';
 import Card from '../components/Card';
 import PageHeader from '../components/PageHeader';
+import UserSegmentation from '../components/UserSegmentation';
+import PredictiveAnalytics from '../components/PredictiveAnalytics';
+import CustomReporting from '../components/CustomReporting';
 
 // Register ChartJS components
 ChartJS.register(
@@ -34,12 +38,14 @@ ChartJS.register(
 );
 
 const AnalyticsPage = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [usageHistory, setUsageHistory] = useState([]);
   const [audioStats, setAudioStats] = useState(null);
   const [dateRange, setDateRange] = useState('6months'); // '1month', '3months', '6months', '1year'
   const [exportFormat, setExportFormat] = useState('csv'); // 'csv', 'json', 'pdf'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'segmentation', 'predictive', 'custom'
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,7 +96,7 @@ const AnalyticsPage = () => {
   // Prepare data for usage history chart
   const prepareUsageHistoryData = () => {
     const filteredData = getFilteredData();
-    
+
     return {
       labels: filteredData.map(item => `${item.month}/${item.year}`),
       datasets: [
@@ -115,7 +121,7 @@ const AnalyticsPage = () => {
   // Prepare data for audio duration chart
   const prepareAudioDurationData = () => {
     const filteredData = getFilteredData();
-    
+
     return {
       labels: filteredData.map(item => `${item.month}/${item.year}`),
       datasets: [
@@ -133,7 +139,7 @@ const AnalyticsPage = () => {
   // Prepare data for source type pie chart
   const prepareSourceTypeData = () => {
     if (!audioStats) return null;
-    
+
     return {
       labels: ['Post', 'Thread', 'Custom'],
       datasets: [
@@ -181,10 +187,10 @@ const AnalyticsPage = () => {
       case 'csv':
         // Create CSV content
         const csvRows = [];
-        
+
         // Header
         csvRows.push(['Month', 'Year', 'Audio Clips Created', 'Posts Used', 'Total Duration (min)', 'Storage Used (MB)']);
-        
+
         // Data rows
         data.usageHistory.forEach(item => {
           csvRows.push([
@@ -196,7 +202,7 @@ const AnalyticsPage = () => {
             Math.round(item.totalStorageUsed / (1024 * 1024)),
           ]);
         });
-        
+
         content = csvRows.map(row => row.join(',')).join('\n');
         filename = `radiox-analytics-${format(new Date(), 'yyyy-MM-dd')}.csv`;
         mimeType = 'text/csv';
@@ -219,7 +225,7 @@ const AnalyticsPage = () => {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <PageHeader title="Analytics Dashboard" />
+        <PageHeader title={t('analytics.dashboard')} />
         <div className="flex justify-center items-center h-64">
           <Spinner size="lg" />
         </div>
@@ -230,7 +236,7 @@ const AnalyticsPage = () => {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <PageHeader title="Analytics Dashboard" />
+        <PageHeader title={t('analytics.dashboard')} />
         <ErrorAlert message={error} />
       </div>
     );
@@ -238,10 +244,55 @@ const AnalyticsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <PageHeader title="Analytics Dashboard" />
-      
-      {/* Controls */}
-      <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+      <PageHeader title={t('analytics.dashboard')} />
+
+      {/* Analytics Tabs */}
+      <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
+        <ul className="flex flex-wrap -mb-px text-sm font-medium text-center">
+          <li className="mr-2">
+            <button
+              className={`inline-flex items-center p-4 border-b-2 rounded-t-lg ${activeTab === 'overview' ? 'text-indigo-600 border-indigo-600 active dark:text-indigo-500 dark:border-indigo-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`}
+              onClick={() => setActiveTab('overview')}
+            >
+              <FiBarChart2 className="mr-2" />
+              {t('analytics.overview')}
+            </button>
+          </li>
+          <li className="mr-2">
+            <button
+              className={`inline-flex items-center p-4 border-b-2 rounded-t-lg ${activeTab === 'segmentation' ? 'text-indigo-600 border-indigo-600 active dark:text-indigo-500 dark:border-indigo-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`}
+              onClick={() => setActiveTab('segmentation')}
+            >
+              <FiUsers className="mr-2" />
+              {t('analytics.userSegmentation')}
+            </button>
+          </li>
+          <li className="mr-2">
+            <button
+              className={`inline-flex items-center p-4 border-b-2 rounded-t-lg ${activeTab === 'predictive' ? 'text-indigo-600 border-indigo-600 active dark:text-indigo-500 dark:border-indigo-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`}
+              onClick={() => setActiveTab('predictive')}
+            >
+              <FiTrendingUp className="mr-2" />
+              {t('analytics.predictiveAnalytics')}
+            </button>
+          </li>
+          <li className="mr-2">
+            <button
+              className={`inline-flex items-center p-4 border-b-2 rounded-t-lg ${activeTab === 'custom' ? 'text-indigo-600 border-indigo-600 active dark:text-indigo-500 dark:border-indigo-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`}
+              onClick={() => setActiveTab('custom')}
+            >
+              <FiFileText className="mr-2" />
+              {t('analytics.customReporting')}
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'overview' && (
+        <div>
+          {/* Controls */}
+          <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
         <div className="flex items-center space-x-2">
           <FiCalendar className="text-gray-500" />
           <select
@@ -255,7 +306,7 @@ const AnalyticsPage = () => {
             <option value="1year">Last Year</option>
           </select>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <select
@@ -267,7 +318,7 @@ const AnalyticsPage = () => {
               <option value="json">JSON</option>
             </select>
           </div>
-          
+
           <button
             className="flex items-center space-x-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
             onClick={exportData}
@@ -277,7 +328,7 @@ const AnalyticsPage = () => {
           </button>
         </div>
       </div>
-      
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
@@ -286,7 +337,7 @@ const AnalyticsPage = () => {
             <p className="text-3xl font-bold text-indigo-600">{audioStats?.totalAudioClips || 0}</p>
           </div>
         </Card>
-        
+
         <Card>
           <div className="flex flex-col items-center">
             <h3 className="text-lg font-medium text-gray-700 mb-2">Total Duration</h3>
@@ -295,7 +346,7 @@ const AnalyticsPage = () => {
             </p>
           </div>
         </Card>
-        
+
         <Card>
           <div className="flex flex-col items-center">
             <h3 className="text-lg font-medium text-gray-700 mb-2">Avg. Duration</h3>
@@ -305,14 +356,14 @@ const AnalyticsPage = () => {
           </div>
         </Card>
       </div>
-      
+
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <Card>
           <h3 className="text-lg font-medium text-gray-700 mb-4">Audio Clips Created</h3>
           <div className="h-80">
-            <Line 
-              data={prepareUsageHistoryData()} 
+            <Line
+              data={prepareUsageHistoryData()}
               options={{
                 responsive: true,
                 maintainAspectRatio: false,
@@ -328,12 +379,12 @@ const AnalyticsPage = () => {
             />
           </div>
         </Card>
-        
+
         <Card>
           <h3 className="text-lg font-medium text-gray-700 mb-4">Audio Duration (minutes)</h3>
           <div className="h-80">
-            <Bar 
-              data={prepareAudioDurationData()} 
+            <Bar
+              data={prepareAudioDurationData()}
               options={{
                 responsive: true,
                 maintainAspectRatio: false,
@@ -350,15 +401,15 @@ const AnalyticsPage = () => {
           </div>
         </Card>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <Card>
           <h3 className="text-lg font-medium text-gray-700 mb-4">Audio Clips by Source</h3>
           <div className="h-80 flex justify-center items-center">
             {audioStats && (
               <div className="w-3/4">
-                <Pie 
-                  data={prepareSourceTypeData()} 
+                <Pie
+                  data={prepareSourceTypeData()}
                   options={{
                     responsive: true,
                     maintainAspectRatio: false,
@@ -368,7 +419,7 @@ const AnalyticsPage = () => {
             )}
           </div>
         </Card>
-        
+
         <Card>
           <h3 className="text-lg font-medium text-gray-700 mb-4">Most Played Audio Clips</h3>
           {audioStats?.mostPlayed?.length > 0 ? (
@@ -401,7 +452,7 @@ const AnalyticsPage = () => {
           )}
         </Card>
       </div>
-      
+
       {/* API Usage */}
       <Card>
         <h3 className="text-lg font-medium text-gray-700 mb-4">API Usage</h3>
@@ -440,6 +491,20 @@ const AnalyticsPage = () => {
           </table>
         </div>
       </Card>
+        </div>
+      )}
+
+      {activeTab === 'segmentation' && (
+        <UserSegmentation />
+      )}
+
+      {activeTab === 'predictive' && (
+        <PredictiveAnalytics />
+      )}
+
+      {activeTab === 'custom' && (
+        <CustomReporting />
+      )}
     </div>
   );
 };

@@ -40,14 +40,19 @@ RadioX Free Edition allows users to convert up to 500 X posts per month into aud
 
 ### Core Features
 - **Hashtag Search Engine**: Search X posts by hashtags with filtering and sorting options.
+- **Smart Search**: Use natural language processing and voice commands to find content.
 - **Post Selection System**: Select posts for conversion with previews and engagement metrics.
 - **Audio Conversion Engine**: Convert posts to audio with customizable voice and background music.
 - **Audio Library Management**: Manage, preview, and download audio clips.
 - **Podcast Publishing System**: Generate RSS feeds for podcast distribution.
 - **Usage Monitoring Dashboard**: Track API usage to stay within Free Tier limits.
 - **User Account Management**: Secure authentication and profile management.
+- **Dark Mode Support**: Modern UI with light and dark mode options for reduced eye strain.
 
 ### Secondary Features
+- **AI-Powered Content Recommendations**: Get personalized content suggestions based on your interests.
+- **Automated Podcast Creation**: Use AI to generate podcast descriptions, titles, and show notes.
+- **Advanced Analytics**: User segmentation, predictive analytics, and custom reporting.
 - **Favorites System**: Save and organize favorite hashtags and posts.
 - **Trending Analysis**: View trending hashtags and receive suggestions.
 - **Audio Enhancement**: Improve audio quality with noise reduction and volume normalization.
