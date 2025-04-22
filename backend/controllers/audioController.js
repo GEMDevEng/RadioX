@@ -4,6 +4,8 @@ const ApiUsage = require('../models/ApiUsage');
 const xApiService = require('../services/xApiService');
 const ttsService = require('../services/ttsService');
 const s3Service = require('../services/s3Service');
+const socketService = require('../services/socketService');
+const { incrementAudioClipsCreated, incrementAudioClipsDuration } = require('../utils/metrics');
 const logger = require('../utils/logger');
 
 /**
@@ -21,7 +23,7 @@ const getAudioClips = asyncHandler(async (req, res) => {
 
   // Build query
   const query = { user: req.user._id };
-  
+
   // Add search if provided
   if (search) {
     query.$text = { $search: search };
@@ -34,13 +36,13 @@ const getAudioClips = asyncHandler(async (req, res) => {
   try {
     // Get total count for pagination
     const total = await AudioClip.countDocuments(query);
-    
+
     // Get audio clips
     const audioClips = await AudioClip.find(query)
       .sort(sort)
       .skip(skip)
       .limit(limit);
-    
+
     res.json({
       audioClips,
       pagination: {
@@ -65,18 +67,18 @@ const getAudioClips = asyncHandler(async (req, res) => {
 const getAudioClip = asyncHandler(async (req, res) => {
   try {
     const audioClip = await AudioClip.findById(req.params.id);
-    
+
     if (!audioClip) {
       res.status(404);
       throw new Error('Audio clip not found');
     }
-    
+
     // Check if the audio clip belongs to the user
     if (audioClip.user.toString() !== req.user._id.toString() && !audioClip.isPublic) {
       res.status(403);
       throw new Error('Not authorized to access this audio clip');
     }
-    
+
     res.json(audioClip);
   } catch (error) {
     logger.error(`Error getting audio clip: ${error.message}`);
@@ -131,6 +133,12 @@ const createAudioFromPost = asyncHandler(async (req, res) => {
       res.status(403);
       throw new Error('You have reached your monthly posts limit');
     }
+
+    // Send notification that conversion has started
+    socketService.sendConversionStatus(req.user._id, 'temp_id', 'processing', {
+      sourceType: 'post',
+      sourceId: postId,
+    });
 
     // Get post using X API service
     const post = await xApiService.getPost(
@@ -188,9 +196,28 @@ const createAudioFromPost = asyncHandler(async (req, res) => {
     apiUsage.totalStorageUsed += audioResult.size;
     await apiUsage.save();
 
+    // Update metrics
+    incrementAudioClipsCreated('post');
+    incrementAudioClipsDuration(audioResult.duration);
+
+    // Send notification that conversion is complete
+    socketService.sendConversionStatus(req.user._id, audioClip._id, 'completed', {
+      title: audioClip.title,
+      duration: audioClip.duration,
+      fileUrl: audioClip.fileUrl,
+    });
+
     res.status(201).json(audioClip);
   } catch (error) {
     logger.error(`Error creating audio from post: ${error.message}`);
+
+    // Send notification that conversion failed
+    socketService.sendConversionStatus(req.user._id, 'temp_id', 'failed', {
+      error: error.message,
+      sourceType: 'post',
+      sourceId: postId,
+    });
+
     res.status(500);
     throw new Error('Error creating audio clip: ' + error.message);
   }
@@ -411,25 +438,25 @@ const updateAudioClip = asyncHandler(async (req, res) => {
 
   try {
     const audioClip = await AudioClip.findById(req.params.id);
-    
+
     if (!audioClip) {
       res.status(404);
       throw new Error('Audio clip not found');
     }
-    
+
     // Check if the audio clip belongs to the user
     if (audioClip.user.toString() !== req.user._id.toString()) {
       res.status(403);
       throw new Error('Not authorized to update this audio clip');
     }
-    
+
     // Update fields
     if (title) audioClip.title = title;
     if (description !== undefined) audioClip.description = description;
     if (isPublic !== undefined) audioClip.isPublic = isPublic;
-    
+
     const updatedAudioClip = await audioClip.save();
-    
+
     res.json(updatedAudioClip);
   } catch (error) {
     logger.error(`Error updating audio clip: ${error.message}`);
@@ -446,24 +473,24 @@ const updateAudioClip = asyncHandler(async (req, res) => {
 const deleteAudioClip = asyncHandler(async (req, res) => {
   try {
     const audioClip = await AudioClip.findById(req.params.id);
-    
+
     if (!audioClip) {
       res.status(404);
       throw new Error('Audio clip not found');
     }
-    
+
     // Check if the audio clip belongs to the user
     if (audioClip.user.toString() !== req.user._id.toString()) {
       res.status(403);
       throw new Error('Not authorized to delete this audio clip');
     }
-    
+
     // Delete from S3
     await s3Service.deleteFile(audioClip.fileKey);
-    
+
     // Delete from database
     await audioClip.remove();
-    
+
     // Update API usage
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1; // 1-12
@@ -480,7 +507,7 @@ const deleteAudioClip = asyncHandler(async (req, res) => {
       if (apiUsage.totalStorageUsed < 0) apiUsage.totalStorageUsed = 0;
       await apiUsage.save();
     }
-    
+
     res.json({ message: 'Audio clip removed' });
   } catch (error) {
     logger.error(`Error deleting audio clip: ${error.message}`);
@@ -497,22 +524,22 @@ const deleteAudioClip = asyncHandler(async (req, res) => {
 const incrementPlayCount = asyncHandler(async (req, res) => {
   try {
     const audioClip = await AudioClip.findById(req.params.id);
-    
+
     if (!audioClip) {
       res.status(404);
       throw new Error('Audio clip not found');
     }
-    
+
     // Check if the audio clip belongs to the user or is public
     if (audioClip.user.toString() !== req.user._id.toString() && !audioClip.isPublic) {
       res.status(403);
       throw new Error('Not authorized to access this audio clip');
     }
-    
+
     // Increment play count
     audioClip.playCount += 1;
     await audioClip.save();
-    
+
     res.json({ success: true, playCount: audioClip.playCount });
   } catch (error) {
     logger.error(`Error incrementing play count: ${error.message}`);
@@ -529,22 +556,22 @@ const incrementPlayCount = asyncHandler(async (req, res) => {
 const incrementDownloadCount = asyncHandler(async (req, res) => {
   try {
     const audioClip = await AudioClip.findById(req.params.id);
-    
+
     if (!audioClip) {
       res.status(404);
       throw new Error('Audio clip not found');
     }
-    
+
     // Check if the audio clip belongs to the user or is public
     if (audioClip.user.toString() !== req.user._id.toString() && !audioClip.isPublic) {
       res.status(403);
       throw new Error('Not authorized to access this audio clip');
     }
-    
+
     // Increment download count
     audioClip.downloadCount += 1;
     await audioClip.save();
-    
+
     res.json({ success: true, downloadCount: audioClip.downloadCount });
   } catch (error) {
     logger.error(`Error incrementing download count: ${error.message}`);
