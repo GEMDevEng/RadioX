@@ -1,6 +1,6 @@
 {
   "short_name": "RadioX",
-  "name": "RadioX - Tweet-to-Audio Converter",
+  "name": "RadioX - X Posts to Audio",
   "icons": [
     {
       "src": "favicon.ico",
@@ -16,10 +16,46 @@
       "src": "logo512.png",
       "type": "image/png",
       "sizes": "512x512"
+    },
+    {
+      "src": "maskable_icon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#1DA1F2",
-  "background_color": "#ffffff"
+  "theme_color": "#4f46e5",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "description": "Convert X posts to high-quality audio clips and podcasts",
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "type": "image/png",
+      "sizes": "1280x720"
+    },
+    {
+      "src": "screenshot2.png",
+      "type": "image/png",
+      "sizes": "1280x720"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "dashboard_icon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Create Audio",
+      "short_name": "Create",
+      "description": "Create a new audio clip",
+      "url": "/create",
+      "icons": [{ "src": "create_icon.png", "sizes": "192x192" }]
+    }
+  ]
 }

@@ -22,6 +22,7 @@ const Navbar = () => {
           { name: 'Search', href: '/search', current: false },
           { name: 'Library', href: '/library', current: false },
           { name: 'Podcast', href: '/podcast', current: false },
+          { name: 'Analytics', href: '/analytics', current: false },
         ]
       : []),
   ];

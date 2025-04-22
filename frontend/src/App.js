@@ -2,6 +2,8 @@ import { Routes, Route } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import Layout from './components/Layout';
+import OfflineBanner from './components/OfflineBanner';
+import UpdateNotification from './components/UpdateNotification';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -10,6 +12,8 @@ import SearchPage from './pages/SearchPage';
 import AudioLibraryPage from './pages/AudioLibraryPage';
 import PodcastPage from './pages/PodcastPage';
 import ProfilePage from './pages/ProfilePage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import PodcastAnalyticsPage from './pages/PodcastAnalyticsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -24,12 +28,15 @@ function App() {
   }
 
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<Layout />}>
-        <Route index element={<HomePage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="register" element={<RegisterPage />} />
+    <>
+      <OfflineBanner />
+      <UpdateNotification />
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
 
         {/* Protected routes */}
         <Route
@@ -65,10 +72,26 @@ function App() {
           }
         />
         <Route
+          path="podcast/:id/analytics"
+          element={
+            <PrivateRoute>
+              <PodcastAnalyticsPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="profile"
           element={
             <PrivateRoute>
               <ProfilePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="analytics"
+          element={
+            <PrivateRoute>
+              <AnalyticsPage />
             </PrivateRoute>
           }
         />
@@ -77,6 +100,7 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
+    </>
   );
 }
 
