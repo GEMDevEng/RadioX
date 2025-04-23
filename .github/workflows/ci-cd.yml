@@ -1,0 +1,256 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd frontend && npm ci
+      
+      - name: Lint backend
+        run: npm run lint
+      
+      - name: Lint frontend
+        run: cd frontend && npm run lint
+  
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm test
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./coverage
+          flags: backend
+  
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: cd frontend && npm ci
+      
+      - name: Run tests
+        run: cd frontend && npm test -- --coverage
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./frontend/coverage
+          flags: frontend
+  
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd frontend && npm ci
+      
+      - name: Build frontend
+        run: cd frontend && npm run build
+      
+      - name: Start backend
+        run: npm run start:test &
+        env:
+          NODE_ENV: test
+          PORT: 4000
+          MONGODB_URI: mongodb://localhost:27017/radiox-test
+          JWT_SECRET: test-jwt-secret
+          JWT_EXPIRES_IN: 1h
+      
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: frontend
+          start: npm run serve
+          wait-on: 'http://localhost:3000, http://localhost:4000/health'
+          wait-on-timeout: 120
+          browser: chrome
+          record: false
+      
+      - name: Upload Cypress screenshots
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: frontend/cypress/screenshots
+  
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd frontend && npm ci
+      
+      - name: Build frontend
+        run: cd frontend && npm run build
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      
+      - name: Build and push backend image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: radiox/backend:latest,radiox/backend:${{ github.sha }}
+      
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: radiox/frontend:latest,radiox/frontend:${{ github.sha }}
+  
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+      
+      - name: Set Kubernetes context
+        uses: azure/k8s-set-context@v3
+        with:
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+      
+      - name: Deploy to Kubernetes
+        run: |
+          # Update image tags in Kubernetes manifests
+          sed -i "s|radiox/backend:latest|radiox/backend:${{ github.sha }}|g" kubernetes/backend-deployment.yaml
+          sed -i "s|radiox/frontend:latest|radiox/frontend:${{ github.sha }}|g" kubernetes/frontend-deployment.yaml
+          
+          # Apply Kubernetes manifests
+          kubectl apply -f kubernetes/
+          
+          # Wait for deployments to be ready
+          kubectl rollout status deployment/radiox-backend
+          kubectl rollout status deployment/radiox-frontend
+      
+      - name: Verify deployment
+        run: |
+          # Check that the services are running
+          kubectl get pods
+          kubectl get services
+          
+          # Check that the ingress is configured
+          kubectl get ingress
+  
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+    
+    steps:
+      - name: Notify on success
+        if: ${{ needs.deploy.result == 'success' }}
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+              "text": "✅ Deployment successful for RadioX!\nCommit: ${{ github.event.head_commit.message }}\nAuthor: ${{ github.event.head_commit.author.name }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      
+      - name: Notify on failure
+        if: ${{ needs.deploy.result != 'success' }}
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+              "text": "❌ Deployment failed for RadioX!\nCommit: ${{ github.event.head_commit.message }}\nAuthor: ${{ github.event.head_commit.author.name }}\nSee: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -273,12 +273,41 @@ RadioX Free Edition employs a comprehensive testing strategy:
 
 ## Deployment
 
-The application is deployed on AWS using:
-- **Docker** for containerization.
-- **Kubernetes** for orchestration.
-- **GitHub Actions** for automated CI/CD pipelines.
-- **Prometheus and Grafana** for real-time monitoring.
-- **ELK Stack** for centralized logging.
+RadioX can be deployed using various methods:
+
+### Vercel Deployment (Frontend)
+The frontend can be easily deployed to Vercel:
+
+```bash
+# Using the provided script
+./scripts/deploy-vercel.sh
+
+# Or manually
+cd frontend
+vercel
+```
+
+For detailed instructions, see [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md).
+
+### Heroku Deployment (Backend)
+The backend can be deployed to Heroku:
+
+```bash
+heroku create radiox-api
+heroku config:set NODE_ENV=production
+# Set other environment variables
+git push heroku main
+```
+
+### Traditional Deployment
+The application can also be deployed on AWS or other cloud providers using:
+- **Docker** for containerization
+- **Kubernetes** for orchestration
+- **GitHub Actions** for automated CI/CD pipelines
+- **Prometheus and Grafana** for real-time monitoring
+- **ELK Stack** for centralized logging
+
+For comprehensive deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ---
 
