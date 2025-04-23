@@ -13,7 +13,10 @@
     "build": "npm run build --prefix frontend",
     "test": "jest",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "deploy:vercel": "cd frontend && npx vercel --prod",
+    "deploy:heroku": "git push heroku main",
+    "deploy": "npm run build && npm run deploy:vercel && npm run deploy:heroku"
   },
   "keywords": [
     "x",
