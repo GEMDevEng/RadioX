@@ -47,7 +47,7 @@
     "winston": "^3.8.2"
   },
   "devDependencies": {
-    "concurrently": "^8.0.1",
+    "concurrently": "^9.1.2",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-import": "^2.27.5",
